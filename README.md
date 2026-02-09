@@ -59,6 +59,19 @@ Adota uma abordagem competitiva para seleção do modelo.
 Embora o Baseline tenha maior Recall, ele inviabilizaria a operação (2.7k bloqueios indevidos em 2 dias). O **Challenger (Random Forest)** foi escolhido por entregar uma operação cirúrgica: alta taxa de acerto com atrito mínimo para o cliente.
 
 ---
+## 💰 5. Validação e Impacto Financeiro (Etapa 8)
+Modelo de fraude para threshold de 0.20. Realiza uma simulação de **Profit & Loss** considerando:
+* **Custo da Fraude (FN):** € 100 (Chargeback médio)
+* **Custo do Bloqueio (FP):** € 2 (Fricção com cliente/SMS)
+
+### Resultado da Otimização
+![Impacto Financeiro](reports/figures/8_financial_impact_analysis.png)
+
+* **Threshold Otimizado:** Ajustado de 0.50 para **0.20**.
+* **Impacto:** Economia projetada de **€ 636 (+30%)** no set de teste.
+* **Trade-off:** Recupera **+8 fraudes** aceitando um aumento controlado nos bloqueios (de 7 para 89).
+
+---
 
 ## 🛠️ Tecnologias Utilizadas
 * **Linguagem:** Python 3.12+
@@ -79,7 +92,7 @@ Embora o Baseline tenha maior Recall, ele inviabilizaria a operação (2.7k bloq
 │   ├── gold/         # Feature Store (Dados prontos para o modelo)
 │   └── processed/    # (Reservado para artefatos finais de deploy)
 ├── reports/
-│   └── figures/      # Gráficos gerados pela EDA (PNGs)
+│   └── figures/      # Gráficos gerados (.PNG)
 ├── models/           # Modelos serializados (.pkl)
 ├── src/
 │   ├── clean_data.py          # Limpeza e Split
@@ -87,6 +100,7 @@ Embora o Baseline tenha maior Recall, ele inviabilizaria a operação (2.7k bloq
 │   ├── feature_engineering.py # Transformers (Scikit-Learn)
 │   ├── train_baseline.py      # Treino Regressão Logística
 │   ├── train_challenger.py    # Treino Random Forest
+│   ├── evaluate.model.py      # Simulação e Threshold Tuning
 │   └── ingest_silver.py       # Ingestão Inicial
 ├── requirements.txt
 └── README.md
