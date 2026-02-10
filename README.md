@@ -72,6 +72,16 @@ Modelo de fraude para threshold de 0.20. Realiza uma simulação de **Profit & L
 * **Trade-off:** Recupera **+8 fraudes** aceitando um aumento controlado nos bloqueios (de 7 para 89).
 
 ---
+## 🚀 6. Deploy e Integração (Etapa 9)
+Implementa uma **API REST com FastAPI** para servir o modelo em tempo real.
+
+* **Arquitetura:** * Input: JSON (Simulando transação).
+    * Processing: Pipeline de Feature Engineering em tempo real (Recálculo de `is_night`, `amount_log`).
+    * Inference: Modelo Challenger (Random Forest).
+    * Output: Decisão de Bloqueio baseada no Threshold de 0.20.
+* **Desafio Superado:** Garantia de integridade de esquema (`Schema Enforcement`) para evitar *Training-Serving Skew*, forçando a API a seguir estritamente a ordem de features do treinamento.
+
+---
 
 ## 🛠️ Tecnologias Utilizadas
 * **Linguagem:** Python 3.12+
