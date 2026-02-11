@@ -1,4 +1,8 @@
 # 🛡️ Fraud Detection System
+![Python](https://img.shields.io/badge/Python-3.12-blue?style=for-the-badge&logo=python)
+![FastAPI](https://img.shields.io/badge/FastAPI-Deploy-green?style=for-the-badge&logo=fastapi)
+![Scikit-Learn](https://img.shields.io/badge/ML-Scikit_Learn-orange?style=for-the-badge&logo=scikit-learn)
+![Status](https://img.shields.io/badge/Status-Completed-success?style=for-the-badge)
 
 ## 📌 Visão Geral
 Este projeto implementa um pipeline End-to-End de Data Science para detecção de fraudes, desenhado sob a perspectiva de **Prevenção de Perdas (Loss Prevention)**. O foco é equilibrar a precisão técnica com restrições operacionais reais, como latência e capacidade de revisão manual.
@@ -22,9 +26,9 @@ O objetivo não é apenas "prever fraude", mas reduzir o prejuízo financeiro (C
 Segue a **Medallion Architecture** para garantir a linhagem dos dados.
 
 * **Bronze (Raw):** Dados brutos (`creditcard.csv`) ingeridos via Kaggle API.
-* **Silver (Padronizada):** Conversão para Parquet (Tipagem forte).
+* **Silver (Padronizada):** Conversão para Parquet (Tipagem forte) e **Time-based Split** (respeitando a temporalidade dos eventos).
 * **Trusted (Cleaned & Split):** Deduplicação e Split Temporal (Treino/Teste).
-* **Gold (Features):** Dados enriquecidos com lógica de negócio. 
+* **Gold (Features):** Dados enriquecidos com lógica de negócio (`is_night`, `amount_log`). 
 
 ---
 
@@ -83,10 +87,21 @@ Implementa uma **API REST com FastAPI** para servir o modelo em tempo real.
 
 ---
 
+## 📉 Monitoramento & Governança (Data Drift)
+Modelos degradam com o tempo. Implementamos um Dashboard de Monitoramento usando **KS-Test** e **Plotly**.
+* **Cenário:** Comparação entre Treino (Passado) e Produção Simulada (Futuro).
+* **Resultado:** 🚨 **Drift Crítico Detectado**. O padrão de transações mudou, indicando necessidade de retreino.
+
+![Dashboard Drift](reports/figures/10_dashboard_drift.png)
+*(Print do Dashboard Interativo gerado pelo sistema)*
+
+---
+
 ## 🛠️ Tecnologias Utilizadas
 * **Linguagem:** Python 3.12+
+* **API:** FastAPI, Uvicorn,Pydantic
 * **Processamento:** Pandas, NumPy, PyArrow
-* **Machine Learning:** Scikit-Learn (Pipelines, Ensembles)
+* **Machine Learning:** Scikit-Learn, joblib, Plotly
 * **Visualização:** Seaborn, Matplotlib
 * **Ambiente:** Virtualenv
 * **Versionamento:** Git
@@ -118,17 +133,58 @@ Implementa uma **API REST com FastAPI** para servir o modelo em tempo real.
  
 Como Executar o Projeto
 
-1.Instale as dependências:
-    pip install -r requirements.txt
+Siga os passos abaixo para reproduzir todo o pipeline, do dado bruto ao dashboard de monitoramento.
 
-2. Execute o Pipeline de Dados:
-    python src/ingest_silver.py      # 1. Ingestão
-    python src/clean_data.py         # 2. Limpeza (Trusted)
-    python src/feature_engineering.py # 3. Feature Eng (Gold)
+1. Configuração do Ambiente
 
-3. Treine e Compare os Modelos:
-    python src/train_baseline.py     # Gera baseline_model.pkl
-    python src/train_challenger.py   # Gera challenger_model.pkl
+# Clone o repositório
+git clone [https://github.com/SEU_USUARIO/NOME_DO_REPO.git](https://github.com/SEU_USUARIO/NOME_DO_REPO.git)
+cd NOME_DO_REPO
+
+# Crie e ative o ambiente virtual
+python -m venv .venv
+source .venv/Scripts/activate  # Windows (Git Bash)
+# source .venv/bin/activate    # Linux/Mac
+
+# Instale as dependências
+pip install -r requirements.txt
+---
+
+2. Pipeline de Dados (ETL)
+
+Execute os scripts na ordem para gerar as camadas Bronze, Silver e Gold.
+
+python src/ingest_silver.py      # Baixa e converte para Parquet
+python src/clean_data.py         # Limpeza e Split Temporal
+python src/feature_engineering.py # Criação de Features (Feature Store)
+---
+
+3. Treinamento e Seleção de Modelos
+
+Treine o Baseline e o Challenger, e depois rode a otimização financeira.
+
+python src/train_baseline.py     # Regressão Logística
+python src/train_challenger.py   # Random Forest (Gera o modelo campeão)
+python src/evaluate_model.py     # Define o Threshold de 0.20 (Gera gráfico financeiro)
+---
+
+4. Subir a API (Produção)
+
+Inicie o servidor FastAPI para fazer previsões em tempo real.
+
+python src/app.py
+
+Acesse a documentação em: http://localhost:8000/docs
+---
+
+5. Monitoramento de Drift
+
+Gere o dashboard de governança para verificar a saúde do modelo.
+
+python src/dashboard_drift.py
+
+O relatório será salvo em reports/10_executive_drift_dashboard.html.
+---
 
 Autor
 Rodrigo Neves
