@@ -1,6 +1,7 @@
 # 🛡️ Fraud Detection System
 ![Python](https://img.shields.io/badge/Python-3.12-blue?style=for-the-badge&logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Deploy-green?style=for-the-badge&logo=fastapi)
+![Power BI](https://img.shields.io/badge/Power_BI-Dashboard-F2C811?style=for-the-badge&logo=powerbi)
 ![Scikit-Learn](https://img.shields.io/badge/ML-Scikit_Learn-orange?style=for-the-badge&logo=scikit-learn)
 ![Status](https://img.shields.io/badge/Status-Completed-success?style=for-the-badge)
 
@@ -15,14 +16,23 @@ O diferencial deste projeto é a aplicação de **Split Temporal Rigoroso**, **F
 O objetivo não é apenas "prever fraude", mas reduzir o prejuízo financeiro (Chargeback) minimizando o atrito com o cliente (Falsos Positivos).
 
 ### KPIs & Restrições
-* **KPI Primário (Eficácia):** Recall (Taxa de Detecção). *Meta: > 70% com alta precisão.*
-* **KPI Secundário (Eficiência):** False Positive Rate (FPR). *Meta: Minimizar bloqueios indevidos.*
-* **Restrição Operacional:** O time de fraude analisa no máximo 50 casos/dia.
-* **SLA Técnico:** Inferência em < 100ms (API Real-time).
+* **KPI Primário (Eficácia):** Recall (Taxa de Detecção). *Meta: > 70% das fraudes capturadas.*
+* **KPI Secundário (Eficiência):** Taxa de Aprovação. *Meta: Manter > 99% dos clientes legítimos aprovados.*
+* **Restrição Operacional:** O time de fraude analisa no máximo 50 casos manuais por dia (Falsos Positivos limitados).
+* **SLA Técnico:** Inferência da API em < 100ms (Real-time).
 
 ---
 
-## 🏗️ 2. Engenharia de Dados (Pipeline)
+## 📊 2. Dashboard Executivo (Power BI)
+Para traduzir os modelos matemáticos em resultados financeiros, foi desenvolvido um painel estratégico.
+
+![Dashboard Power BI](reports/figures/dashboard_powerbi.png)
+*(Exemplo ilustrativo: Visão de Economia Projetada, Recall e Impacto Financeiro por Estratégia)*
+
+> **Nota:** O arquivo `.pbix` e o script de geração de dados (`export_powerbi.py`) estão disponíveis na pasta `reports/`.
+---
+
+## 🏗️ 3. Engenharia de Dados (Pipeline)
 Segue a **Medallion Architecture** para garantir a linhagem dos dados.
 
 * **Bronze (Raw):** Dados brutos (`creditcard.csv`) ingeridos via Kaggle API.
@@ -32,7 +42,7 @@ Segue a **Medallion Architecture** para garantir a linhagem dos dados.
 
 ---
 
-## 🧠 3. Inteligência e Análise (EDA & Feature Eng.)
+## 🧠 4. Inteligência e Análise (EDA & Feature Eng.)
 ### 📊 Visualização dos Insights
 *Durante a EDA (focada apenas no Treino), padrões críticos:*
 
@@ -51,7 +61,7 @@ Traduz esses insights em código na camada **Gold**:
 
 ---
 
-## 🤖 4. Estratégia de Modelagem (Baseline vs Challenger)
+## 🤖 5. Estratégia de Modelagem (Baseline vs Challenger)
 Adota uma abordagem competitiva para seleção do modelo.
 
 | Modelo | Arquitetura | Recall | Precisão | Falsos Positivos (Teste) | Veredito |
@@ -63,8 +73,8 @@ Adota uma abordagem competitiva para seleção do modelo.
 Embora o Baseline tenha maior Recall, ele inviabilizaria a operação (2.7k bloqueios indevidos em 2 dias). O **Challenger (Random Forest)** foi escolhido por entregar uma operação cirúrgica: alta taxa de acerto com atrito mínimo para o cliente.
 
 ---
-## 💰 5. Validação e Impacto Financeiro (Etapa 8)
-Modelo de fraude para threshold de 0.20. Realiza uma simulação de **Profit & Loss** considerando:
+## 💰 Validação Financeira (Profit & Loss)
+Otimiza o **Threshold de Decisão** baseado no dinheiro:
 * **Custo da Fraude (FN):** € 100 (Chargeback médio)
 * **Custo do Bloqueio (FP):** € 2 (Fricção com cliente/SMS)
 
@@ -73,10 +83,9 @@ Modelo de fraude para threshold de 0.20. Realiza uma simulação de **Profit & L
 
 * **Threshold Otimizado:** Ajustado de 0.50 para **0.20**.
 * **Impacto:** Economia projetada de **€ 636 (+30%)** no set de teste.
-* **Trade-off:** Recupera **+8 fraudes** aceitando um aumento controlado nos bloqueios (de 7 para 89).
 
 ---
-## 🚀 6. Deploy e Integração (Etapa 9)
+## 🚀 7. Deploy (API Real-time) & Monitoramento
 Implementa uma **API REST com FastAPI** para servir o modelo em tempo real.
 
 * **Arquitetura:** * Input: JSON (Simulando transação).
@@ -109,82 +118,106 @@ Modelos degradam com o tempo. Implementamos um Dashboard de Monitoramento usando
 ---
 
 ## 📂 Estrutura do Repositório
+
 ```text
-├── data/
-│   ├── raw/          # Dados brutos (creditcard.csv)
-│   ├── silver/       # Parquet padronizado
-│   ├── trusted/      # Dados limpos e divididos (Time-Split)
-│   ├── gold/         # Feature Store (Dados prontos para o modelo)
-│   └── processed/    # (Reservado para artefatos finais de deploy)
+├── data/                  # (Ignorado no Git) Armazena dados Raw, Silver, Gold
 ├── reports/
-│   └── figures/      # Gráficos gerados (.PNG)
-├── models/           # Modelos serializados (.pkl)
+│   ├── figures/           # Gráficos gerados e prints
+│   ├── powerbi_dataset/   # CSV gerado para o Dashboard
+│   ├── Dashboard.pbix     # Arquivo do Power BI
+│   └── drift_report.html  # Relatório de Data Drift
+├── models/                # Modelos serializados (.pkl)
 ├── src/
-│   ├── clean_data.py          # Limpeza e Split
-│   ├── eda_analysis.py        # Geração de Insights
-│   ├── feature_engineering.py # Transformers (Scikit-Learn)
+│   ├── app.py                 # API FastAPI
+│   ├── clean_data.py          # Pipeline de Limpeza
+│   ├── eda_analysis.py        # Geração de Gráficos e Insights
+│   ├── feature_eng...         # Pipeline de Features
 │   ├── train_baseline.py      # Treino Regressão Logística
 │   ├── train_challenger.py    # Treino Random Forest
-│   ├── evaluate.model.py      # Simulação e Threshold Tuning
-│   └── ingest_silver.py       # Ingestão Inicial
+│   ├── evaluate_model.py      # Otimização Financeira
+│   ├── export_powerbi.py      # Gera dados para o Dashboard PBI
+│   ├── monitor_drift.py       # Cálculo de Drift (Evidently/Alibi)
+│   └── dashboard_drift.py     # Gera HTML de monitoramento
 ├── requirements.txt
 └── README.md
-
+```
  
-Como Executar o Projeto
+## 🛠️ Como Executar o Projeto
 
-Siga os passos abaixo para reproduzir todo o pipeline, do dado bruto ao dashboard de monitoramento.
+Siga os passos abaixo para reproduzir todo o pipeline.
 
-1. Configuração do Ambiente
+## 1. Configuração do Ambiente
 
-# Clone o repositório
+Clone o repositório
+
 git clone [https://github.com/SEU_USUARIO/NOME_DO_REPO.git](https://github.com/SEU_USUARIO/NOME_DO_REPO.git)
 cd NOME_DO_REPO
 
-# Crie e ative o ambiente virtual
+Crie e ative o ambiente virtual
+
 python -m venv .venv
-source .venv/Scripts/activate  # Windows (Git Bash)
-# source .venv/bin/activate    # Linux/Mac
 
-# Instale as dependências
+source .venv/bin/activate    # Linux/Mac
+
+.venv\Scripts\activate     # Windows
+
+Instale as dependências
+
 pip install -r requirements.txt
----
 
-2. Pipeline de Dados (ETL)
+## 2. Pipeline de Dados e Treinamento
 
-Execute os scripts na ordem para gerar as camadas Bronze, Silver e Gold.
+**Ingestão e Limpeza**
 
-python src/ingest_silver.py      # Baixa e converte para Parquet
-python src/clean_data.py         # Limpeza e Split Temporal
-python src/feature_engineering.py # Criação de Features (Feature Store)
----
+python src/ingest_silver.py
 
-3. Treinamento e Seleção de Modelos
+python src/clean_data.py
 
-Treine o Baseline e o Challenger, e depois rode a otimização financeira.
+**Feature Engineering**
 
-python src/train_baseline.py     # Regressão Logística
-python src/train_challenger.py   # Random Forest (Gera o modelo campeão)
-python src/evaluate_model.py     # Define o Threshold de 0.20 (Gera gráfico financeiro)
----
+python src/feature_engineering.py
 
-4. Subir a API (Produção)
+**Treinamento e Avaliação**
 
-Inicie o servidor FastAPI para fazer previsões em tempo real.
+python src/train_baseline.py
+
+python src/train_challenger.py
+
+python src/evaluate_model.py  # Gera gráficos financeiros
+
+## 3. Deploy da API
+
+**Inicia o servidor localmente**
 
 python src/app.py
 
-Acesse a documentação em: http://localhost:8000/docs
----
+Acesse a documentação: http://localhost:8000/docs
 
-5. Monitoramento de Drift
+## 4. Dashboards (Drift & Power BI)
 
-Gere o dashboard de governança para verificar a saúde do modelo.
+**Gera relatório de Drift**
 
 python src/dashboard_drift.py
 
-O relatório será salvo em reports/10_executive_drift_dashboard.html.
+**Gera dataset para o Power BI**
+
+python src/export_powerbi.py
+
+Abra o arquivo reports/Dashboard.pbix e atualize os dados.
+
 ---
+## 📚 Referências e Agradecimentos
+
+Este projeto foi desenvolvido aplicando conhecimentos adquiridos através de muita prática, leitura de documentação e cursos de excelência. Um agradecimento especial às fontes que fundamentaram a base técnica deste trabalho:
+
+* **[Data Science Academy](https://www.datascienceacademy.com.br/):** Pelos cursos de *Fundamentos de Engenharia de Dados* e *Microsoft Power BI para Data Science*, essenciais para a visão de pipeline e storytelling de dados.
+* **[Téo Me Why](https://www.twitch.tv/teomewhy):** Com ajuda da comunidade e conteúdos práticos sobre Pandas e Machine Learning "hands-on".
+* **Documentações Oficiais:** 
+    * [Python 3.12 Documentation](https://docs.python.org/3/)
+    * [Pandas User Guide](https://pandas.pydata.org/docs/user_guide/index.html)
+    * [Scikit-Learn User Guide](https://scikit-learn.org/stable/user_guide.html)
+    * [FastAPI Documentation](https://fastapi.tiangolo.com/)
 
 Autor
+
 Rodrigo Neves
